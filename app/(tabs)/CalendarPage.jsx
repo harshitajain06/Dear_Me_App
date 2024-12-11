@@ -61,7 +61,7 @@ const CalendarPage = () => {
   };
 
   const onDayPress = (day) => {
-    navigation.navigate('AddHabit', { date: day.dateString });
+    navigation.navigate('HabitAddPage', { date: day.dateString });
   };
 
   if (loading || loadingHabits) {
@@ -104,7 +104,7 @@ const CalendarPage = () => {
       />
       <TouchableOpacity
         style={styles.addButton}
-        onPress={() => navigation.navigate('AddHabit')}
+        onPress={() => navigation.navigate('HabitAddPage')}
       >
         <Text style={styles.addButtonText}>Add New Habit</Text>
       </TouchableOpacity>

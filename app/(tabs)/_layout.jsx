@@ -7,6 +7,7 @@ import CalendarPage from './CalendarPage';
 import VideosPage from './VideosPage'; // Updated import
 import RegisterScreen from './index';
 import LoginScreen from './Login';
+import HabitAddPage from './HabitAddPage'; // Import the HabitAddPage
 import { Colors } from '../../constants/Colors';
 import { useColorScheme } from '../../hooks/useColorScheme';
 import { Ionicons } from '@expo/vector-icons'; // If using Expo
@@ -70,6 +71,9 @@ export default function StackLayout() {
 
       {/* Main App Tabs */}
       <Stack.Screen name="MainTabs" component={BottomTabs} />
+
+      {/* Habit Add Page */}
+      <Stack.Screen name="HabitAddPage" component={HabitAddPage} />
     </Stack.Navigator>
   );
 }
