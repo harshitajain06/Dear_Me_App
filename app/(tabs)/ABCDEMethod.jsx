@@ -1,17 +1,40 @@
 // src/navigation/ABCDEMethod.jsx
-import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, FlatList, Modal } from 'react-native';
 import { auth, db } from '../../config/firebase';
-import { collection, addDoc } from 'firebase/firestore';
+import { collection, addDoc, getDocs, deleteDoc, doc } from 'firebase/firestore';
 import { useAuthState } from 'react-firebase-hooks/auth';
+import { Ionicons } from '@expo/vector-icons';
 
 const ABCDEMethod = ({ navigation }) => {
   const [user, loading, error] = useAuthState(auth);
   const [abcde, setAbcde] = useState({ a: '', b: '', c: '', d: '', e: '' });
+  const [savedABCDE, setSavedABCDE] = useState([]);
+  const [isModalVisible, setIsModalVisible] = useState(false);
 
   const handleInputChange = (field, value) => {
     setAbcde({ ...abcde, [field]: value });
   };
+
+  // Fetch saved ABCDE entries from Firebase
+  const fetchABCDE = async () => {
+    if (user) {
+      try {
+        const querySnapshot = await getDocs(collection(db, 'abcde'));
+        const userEntries = querySnapshot.docs
+          .filter((doc) => doc.data().userId === user.uid)
+          .map((doc) => ({ id: doc.id, ...doc.data() }));
+        setSavedABCDE(userEntries);
+      } catch (err) {
+        console.error('Error fetching ABCDE entries: ', err);
+        Alert.alert('Error', 'Failed to load ABCDE entries.');
+      }
+    }
+  };
+
+  useEffect(() => {
+    fetchABCDE();
+  }, [user]);
 
   const saveABCDE = async () => {
     const { a, b, c, d, e } = abcde;
@@ -29,15 +52,35 @@ const ABCDEMethod = ({ navigation }) => {
       });
       Alert.alert('Success', 'ABCDE method saved.');
       setAbcde({ a: '', b: '', c: '', d: '', e: '' });
+      fetchABCDE(); // Refresh the list
     } catch (err) {
       console.error('Error saving ABCDE: ', err);
       Alert.alert('Error', 'Failed to save ABCDE.');
     }
   };
 
+  const deleteABCDE = async (id) => {
+    try {
+      await deleteDoc(doc(db, 'abcde', id));
+      Alert.alert('Success', 'ABCDE entry deleted successfully.');
+      fetchABCDE(); // Refresh the list
+    } catch (err) {
+      console.error('Error deleting ABCDE: ', err);
+      Alert.alert('Error', 'Failed to delete ABCDE.');
+    }
+  };
+
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>ABCDE Method</Text>
+      {/* Header */}
+      <View style={styles.header}>
+        <Text style={styles.title}>ABCDE Method</Text>
+        <TouchableOpacity onPress={() => setIsModalVisible(true)}>
+          <Ionicons name="list-outline" size={30} color="#007BFF" style={styles.icon} />
+        </TouchableOpacity>
+      </View>
+
+      {/* Input Fields */}
       <TextInput
         style={styles.input}
         placeholder="A: Activating Event"
@@ -68,9 +111,49 @@ const ABCDEMethod = ({ navigation }) => {
         value={abcde.e}
         onChangeText={(value) => handleInputChange('e', value)}
       />
+
+      {/* Save Button */}
       <TouchableOpacity onPress={saveABCDE} style={styles.button}>
         <Text style={styles.buttonText}>Save ABCDE</Text>
       </TouchableOpacity>
+
+      {/* Modal for Showing Saved ABCDE Entries */}
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={isModalVisible}
+        onRequestClose={() => setIsModalVisible(false)}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Saved ABCDE Entries</Text>
+            <FlatList
+              data={savedABCDE}
+              keyExtractor={(item) => item.id}
+              renderItem={({ item }) => (
+                <View style={styles.modalItem}>
+                  <View style={styles.modalTextContainer}>
+                    <Text style={styles.modalItemText}>A: {item.abcde.a}</Text>
+                    <Text style={styles.modalItemText}>B: {item.abcde.b}</Text>
+                    <Text style={styles.modalItemText}>C: {item.abcde.c}</Text>
+                    <Text style={styles.modalItemText}>D: {item.abcde.d}</Text>
+                    <Text style={styles.modalItemText}>E: {item.abcde.e}</Text>
+                  </View>
+                  <TouchableOpacity onPress={() => deleteABCDE(item.id)}>
+                    <Ionicons name="trash" size={24} color="#FF5733" />
+                  </TouchableOpacity>
+                </View>
+              )}
+            />
+            <TouchableOpacity
+              style={styles.closeModalButton}
+              onPress={() => setIsModalVisible(false)}
+            >
+              <Text style={styles.closeModalButtonText}>Close</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 };
@@ -82,11 +165,21 @@ const styles = StyleSheet.create({
     backgroundColor: '#DCE9FE',
     alignItems: 'center',
   },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '100%',
+    alignItems: 'center',
+    marginBottom: 20,
+    marginTop: 30,
+  },
   title: {
     fontSize: 28,
     color: '#567396',
-    marginBottom: 20,
     fontWeight: 'bold',
+  },
+  icon: {
+    marginLeft: 'auto',
   },
   input: {
     width: '100%',
@@ -108,6 +201,54 @@ const styles = StyleSheet.create({
   buttonText: {
     color: '#fff',
     fontSize: 18,
+    fontWeight: 'bold',
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+  },
+  modalContent: {
+    width: '80%',
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    padding: 20,
+    alignItems: 'center',
+    maxHeight: '70%',
+  },
+  modalTitle: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    marginBottom: 15,
+    color: '#007BFF',
+  },
+  modalItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderColor: '#E1E8F0',
+    width: '100%',
+  },
+  modalTextContainer: {
+    flex: 1,
+  },
+  modalItemText: {
+    fontSize: 16,
+    color: '#333',
+  },
+  closeModalButton: {
+    marginTop: 20,
+    backgroundColor: '#FF5733',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 25,
+  },
+  closeModalButtonText: {
+    color: '#fff',
+    fontSize: 16,
     fontWeight: 'bold',
   },
 });

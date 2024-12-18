@@ -125,7 +125,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
-    backgroundColor: '#F8FAFF',
+    backgroundColor: '#DCE9FE',
     alignItems: 'center',
   },
   header: {
@@ -138,7 +138,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 28,
-    color: '#2A4D8C',
+    color: '#567396',
     fontWeight: 'bold',
   },
   icon: {

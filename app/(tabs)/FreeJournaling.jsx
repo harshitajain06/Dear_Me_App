@@ -1,13 +1,35 @@
-// src/navigation/FreeJournaling.jsx
-import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, FlatList, Modal } from 'react-native';
 import { auth, db } from '../../config/firebase';
-import { collection, addDoc } from 'firebase/firestore';
+import { collection, addDoc, getDocs, deleteDoc, doc } from 'firebase/firestore';
 import { useAuthState } from 'react-firebase-hooks/auth';
+import { Ionicons } from '@expo/vector-icons'; // Import Ionicons
 
-const FreeJournaling = ({ navigation }) => {
+const FreeJournaling = () => {
   const [user, loading, error] = useAuthState(auth);
   const [entry, setEntry] = useState('');
+  const [entries, setEntries] = useState([]);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+
+  // Fetch journal entries from Firebase
+  const fetchEntries = async () => {
+    if (user) {
+      try {
+        const querySnapshot = await getDocs(collection(db, 'journals'));
+        const userEntries = querySnapshot.docs
+          .filter(doc => doc.data().userId === user.uid)
+          .map(doc => ({ id: doc.id, ...doc.data() }));
+        setEntries(userEntries);
+      } catch (err) {
+        console.error('Error fetching entries: ', err);
+        Alert.alert('Error', 'Failed to load entries.');
+      }
+    }
+  };
+
+  useEffect(() => {
+    fetchEntries();
+  }, [user]);
 
   const addEntry = async () => {
     if (!entry.trim()) {
@@ -23,15 +45,33 @@ const FreeJournaling = ({ navigation }) => {
       });
       Alert.alert('Success', 'Journal entry added.');
       setEntry('');
+      fetchEntries(); // Refresh the list
     } catch (err) {
       console.error('Error adding entry: ', err);
       Alert.alert('Error', 'Failed to add entry.');
     }
   };
 
+  const deleteEntry = async (id) => {
+    try {
+      await deleteDoc(doc(db, 'journals', id));
+      Alert.alert('Success', 'Journal entry deleted.');
+      fetchEntries(); // Refresh the list
+    } catch (err) {
+      console.error('Error deleting entry: ', err);
+      Alert.alert('Error', 'Failed to delete entry.');
+    }
+  };
+
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Free Journaling</Text>
+      <View style={styles.header}>
+        <Text style={styles.title}>Free Journaling</Text>
+        <TouchableOpacity onPress={() => setIsModalVisible(true)}>
+          <Ionicons name="list-outline" size={30} color="#007BFF" style={styles.icon} />
+        </TouchableOpacity>
+      </View>
+
       <TextInput
         style={styles.input}
         placeholder="Write your journal entry"
@@ -39,9 +79,42 @@ const FreeJournaling = ({ navigation }) => {
         onChangeText={setEntry}
         multiline
       />
+
       <TouchableOpacity onPress={addEntry} style={styles.button}>
         <Text style={styles.buttonText}>Add Entry</Text>
       </TouchableOpacity>
+
+      {/* Modal for All Journal Entries */}
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={isModalVisible}
+        onRequestClose={() => setIsModalVisible(false)}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>All Journal Entries</Text>
+            <FlatList
+              data={entries}
+              keyExtractor={(item) => item.id}
+              renderItem={({ item }) => (
+                <View style={styles.modalItem}>
+                  <Text style={styles.modalItemText}>{item.entry}</Text>
+                  <TouchableOpacity onPress={() => deleteEntry(item.id)}>
+                    <Ionicons name="trash" size={24} color="#FF5733" />
+                  </TouchableOpacity>
+                </View>
+              )}
+            />
+            <TouchableOpacity
+              style={styles.closeModalButton}
+              onPress={() => setIsModalVisible(false)}
+            >
+              <Text style={styles.closeModalButtonText}>Close</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 };
@@ -53,11 +126,22 @@ const styles = StyleSheet.create({
     backgroundColor: '#DCE9FE',
     alignItems: 'center',
   },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '100%',
+    alignItems: 'center',
+    marginBottom: 20,
+    marginTop: 30,
+  },
   title: {
     fontSize: 28,
     color: '#567396',
     marginBottom: 20,
     fontWeight: 'bold',
+  },
+  icon: {
+    marginLeft: 'auto',
   },
   input: {
     width: '100%',
@@ -81,6 +165,52 @@ const styles = StyleSheet.create({
   buttonText: {
     color: '#fff',
     fontSize: 18,
+    fontWeight: 'bold',
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+  },
+  modalContent: {
+    width: '80%',
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    padding: 20,
+    alignItems: 'center',
+    maxHeight: '70%',
+  },
+  modalTitle: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    marginBottom: 15,
+    color: '#007BFF',
+  },
+  modalItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderColor: '#E1E8F0',
+    width: '100%',
+  },
+  modalItemText: {
+    fontSize: 16,
+    color: '#333',
+    flex: 1,
+  },
+  closeModalButton: {
+    marginTop: 20,
+    backgroundColor: '#FF5733',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 25,
+  },
+  closeModalButtonText: {
+    color: '#fff',
+    fontSize: 16,
     fontWeight: 'bold',
   },
 });
