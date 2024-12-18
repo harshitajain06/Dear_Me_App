@@ -5,9 +5,15 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import HomeScreen from './HomeScreen';
 import CalendarPage from './CalendarPage';
 import VideosPage from './VideosPage'; // Updated import
+import JournalPage from './JournalPage'; // Import the JournalPage component
 import RegisterScreen from './index';
 import LoginScreen from './Login';
 import HabitAddPage from './HabitAddPage'; // Import the HabitAddPage
+import GratitudeList from './GratitudeList'; // New GratitudeList Page
+import TodaysGoals from './TodaysGoals'; // New TodaysGoals Page
+import DailyReflection from './DailyReflection'; // New DailyReflection Page
+import FreeJournaling from './FreeJournaling'; // New FreeJournaling Page
+import ABCDEMethod from './ABCDEMethod'; // New ABCDEMethod Page
 import { Colors } from '../../constants/Colors';
 import { useColorScheme } from '../../hooks/useColorScheme';
 import { Ionicons } from '@expo/vector-icons'; // If using Expo
@@ -37,6 +43,8 @@ const BottomTabs = () => {
             iconName = focused ? 'calendar' : 'calendar-outline';
           } else if (route.name === 'Videos') {
             iconName = focused ? 'videocam' : 'videocam-outline'; // Updated icon
+          } else if (route.name === 'Journal') {
+            iconName = focused ? 'book' : 'book-outline'; // Icon for Journal
           }
 
           return <Ionicons name={iconName} size={size} color={color} />;
@@ -49,6 +57,11 @@ const BottomTabs = () => {
         name="Videos"
         component={VideosPage} // Updated component
         options={{ title: 'Videos' }}
+      />
+      <Tab.Screen
+        name="Journal"
+        component={JournalPage} // New Journal Tab
+        options={{ title: 'Journal' }}
       />
     </Tab.Navigator>
   );
@@ -74,6 +87,13 @@ export default function StackLayout() {
 
       {/* Habit Add Page */}
       <Stack.Screen name="HabitAddPage" component={HabitAddPage} />
+
+      {/* New Pages */}
+      <Stack.Screen name="GratitudeList" component={GratitudeList} />
+      <Stack.Screen name="TodaysGoals" component={TodaysGoals} />
+      <Stack.Screen name="DailyReflection" component={DailyReflection} />
+      <Stack.Screen name="FreeJournaling" component={FreeJournaling} />
+      <Stack.Screen name="ABCDEMethod" component={ABCDEMethod} />
     </Stack.Navigator>
   );
 }
