@@ -1,14 +1,35 @@
 // src/navigation/GratitudeList.jsx
-import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, FlatList } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, FlatList, Modal } from 'react-native';
 import { auth, db } from '../../config/firebase';
-import { collection, addDoc } from 'firebase/firestore';
+import { collection, addDoc, getDocs, deleteDoc, doc } from 'firebase/firestore';
 import { useAuthState } from 'react-firebase-hooks/auth';
+import { Ionicons } from '@expo/vector-icons';
 
 const GratitudeList = ({ navigation }) => {
   const [user, loading, error] = useAuthState(auth);
   const [gratitude, setGratitude] = useState('');
   const [gratitudes, setGratitudes] = useState([]);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+
+  const fetchGratitudes = async () => {
+    if (user) {
+      try {
+        const querySnapshot = await getDocs(collection(db, 'gratitude'));
+        const userGratitudes = querySnapshot.docs
+          .filter((doc) => doc.data().userId === user.uid)
+          .map((doc) => ({ id: doc.id, ...doc.data() }));
+        setGratitudes(userGratitudes);
+      } catch (err) {
+        console.error('Error fetching gratitudes: ', err);
+        Alert.alert('Error', 'Failed to load gratitudes.');
+      }
+    }
+  };
+
+  useEffect(() => {
+    fetchGratitudes();
+  }, [user]);
 
   const addGratitude = async () => {
     if (!gratitude.trim()) {
@@ -17,12 +38,12 @@ const GratitudeList = ({ navigation }) => {
     }
 
     try {
-      await addDoc(collection(db, 'gratitude'), {
+      const docRef = await addDoc(collection(db, 'gratitude'), {
         userId: user.uid,
         gratitude: gratitude.trim(),
         createdAt: new Date(),
       });
-      setGratitudes((prev) => [...prev, gratitude]);
+      setGratitudes((prev) => [...prev, { id: docRef.id, gratitude: gratitude.trim() }]);
       setGratitude('');
     } catch (err) {
       console.error('Error adding gratitude: ', err);
@@ -30,9 +51,28 @@ const GratitudeList = ({ navigation }) => {
     }
   };
 
+  const deleteGratitude = async (id) => {
+    try {
+      await deleteDoc(doc(db, 'gratitude', id));
+      setGratitudes((prev) => prev.filter((item) => item.id !== id));
+      Alert.alert('Success', 'Gratitude deleted successfully.');
+    } catch (err) {
+      console.error('Error deleting gratitude: ', err);
+      Alert.alert('Error', 'Failed to delete gratitude.');
+    }
+  };
+
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Gratitude List</Text>
+      {/* Header */}
+      <View style={styles.header}>
+        <Text style={styles.title}>Gratitude List</Text>
+        <TouchableOpacity onPress={() => setIsModalVisible(true)}>
+          <Ionicons name="list-outline" size={30} color="#007BFF" style={styles.icon} />
+        </TouchableOpacity>
+      </View>
+
+      {/* Input Field */}
       <TextInput
         style={styles.input}
         placeholder="Enter what you're grateful for"
@@ -43,15 +83,37 @@ const GratitudeList = ({ navigation }) => {
         <Text style={styles.buttonText}>Add Gratitude</Text>
       </TouchableOpacity>
 
-      <FlatList
-        data={gratitudes}
-        keyExtractor={(item, index) => index.toString()}
-        renderItem={({ item }) => (
-          <View style={styles.gratitudeItem}>
-            <Text>{item}</Text>
+      {/* Modal for Showing Saved Gratitudes */}
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={isModalVisible}
+        onRequestClose={() => setIsModalVisible(false)}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Saved Gratitudes</Text>
+            <FlatList
+              data={gratitudes}
+              keyExtractor={(item) => item.id}
+              renderItem={({ item }) => (
+                <View style={styles.modalItem}>
+                  <Text style={styles.modalItemText}>{item.gratitude}</Text>
+                  <TouchableOpacity onPress={() => deleteGratitude(item.id)}>
+                    <Ionicons name="trash" size={24} color="#FF5733" />
+                  </TouchableOpacity>
+                </View>
+              )}
+            />
+            <TouchableOpacity
+              style={styles.closeModalButton}
+              onPress={() => setIsModalVisible(false)}
+            >
+              <Text style={styles.closeModalButtonText}>Close</Text>
+            </TouchableOpacity>
           </View>
-        )}
-      />
+        </View>
+      </Modal>
     </View>
   );
 };
@@ -63,12 +125,21 @@ const styles = StyleSheet.create({
     backgroundColor: '#DCE9FE',
     alignItems: 'center',
   },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '100%',
+    alignItems: 'center',
+    marginBottom: 20,
+    marginTop: 30,
+  },
   title: {
     fontSize: 28,
     color: '#567396',
-    marginBottom: 20,
     fontWeight: 'bold',
-    marginTop: 50,
+  },
+  icon: {
+    marginLeft: 'auto',
   },
   input: {
     width: '100%',
@@ -92,12 +163,50 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
   },
-  gratitudeItem: {
-    marginVertical: 10,
-    padding: 10,
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+  },
+  modalContent: {
+    width: '80%',
     backgroundColor: '#fff',
-    borderRadius: 5,
+    borderRadius: 10,
+    padding: 20,
+    alignItems: 'center',
+    maxHeight: '70%',
+  },
+  modalTitle: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    marginBottom: 15,
+    color: '#007BFF',
+  },
+  modalItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderColor: '#E1E8F0',
     width: '100%',
+  },
+  modalItemText: {
+    fontSize: 16,
+    color: '#333',
+  },
+  closeModalButton: {
+    marginTop: 20,
+    backgroundColor: '#FF5733',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 25,
+  },
+  closeModalButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
 });
 
