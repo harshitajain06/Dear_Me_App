@@ -10,6 +10,7 @@ import {
   Modal,
   FlatList,
 } from 'react-native';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import { auth, db } from '../../config/firebase';
 import { collection, addDoc } from 'firebase/firestore';
@@ -23,28 +24,103 @@ const HabitAddPage = () => {
   const [habit, setHabit] = useState('');
   const [smiley, setSmiley] = useState('🙂'); // Default smiley
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [time, setTime] = useState(new Date());
+  const [repeat, setRepeat] = useState('None'); // Default repeat value
+  const [endDate, setEndDate] = useState(null);
+  const [isTimePickerVisible, setIsTimePickerVisible] = useState(false);
+  const [isEndDatePickerVisible, setIsEndDatePickerVisible] = useState(false);
 
   const smileys = ['🙂', '😌', '😅', '😔', '😎', '😂', '😍', '🤔', '😴', '🤩'];
+  const repeatOptions = ['None', 'Daily', 'Weekly', 'Monthly'];
 
   const addHabit = async () => {
     if (!habit.trim()) {
       Alert.alert('Validation Error', 'Please enter a habit.');
       return;
     }
-
+  
+    if (repeat !== 'None' && !endDate) {
+      Alert.alert('Validation Error', 'Please specify an end date for repeated habits.');
+      return;
+    }
+  
     try {
-      await addDoc(collection(db, 'habits'), {
-        userId: user.uid,
-        habit: habit.trim(),
-        date: date || new Date().toISOString().split('T')[0],
-        smiley,
-        createdAt: new Date(),
-      });
-      Alert.alert('Success', 'Habit and smiley added successfully.');
+      const habitsToAdd = [];
+      const currentDate = new Date(date || new Date().toISOString().split('T')[0]);
+      let nextDate = new Date(currentDate);
+  
+      while (repeat !== 'None' && endDate && nextDate <= endDate) {
+        habitsToAdd.push({
+          userId: user.uid,
+          habit: habit.trim(),
+          date: nextDate.toISOString().split('T')[0],
+          smiley,
+          time: time.toISOString(),
+          repeat,
+          endDate: endDate.toISOString(),
+          createdAt: new Date(),
+        });
+  
+        // Calculate next repeat date
+        switch (repeat) {
+          case 'Daily':
+            nextDate.setDate(nextDate.getDate() + 1);
+            break;
+          case 'Weekly':
+            nextDate.setDate(nextDate.getDate() + 7);
+            break;
+          case 'Monthly':
+            nextDate.setMonth(nextDate.getMonth() + 1);
+            break;
+          default:
+            break;
+        }
+      }
+  
+      if (repeat === 'None') {
+        habitsToAdd.push({
+          userId: user.uid,
+          habit: habit.trim(),
+          date: currentDate.toISOString().split('T')[0],
+          smiley,
+          time: time.toISOString(),
+          repeat,
+          endDate: null,
+          createdAt: new Date(),
+        });
+      }
+  
+      // Save all habits in the database
+      const batchPromises = habitsToAdd.map((habitData) =>
+        addDoc(collection(db, 'habits'), habitData)
+      );
+  
+      await Promise.all(batchPromises);
+  
+      Alert.alert('Success', 'Habit(s) added successfully.');
       navigation.goBack();
     } catch (err) {
-      console.error('Error adding habit: ', err);
-      Alert.alert('Error', 'Failed to add habit.');
+      console.error('Error adding habit(s): ', err);
+      Alert.alert('Error', 'Failed to add habit(s).');
+    }
+  };
+  
+
+  const showDatePicker = (type) => {
+    if (type === 'time') {
+      setIsTimePickerVisible(true);
+    } else if (type === 'endDate') {
+      setIsEndDatePickerVisible(true);
+    }
+  };
+
+  const handleDateChange = (event, selectedDate, type) => {
+    if (type === 'time') {
+      setIsTimePickerVisible(false);
+      if (selectedDate) setTime(selectedDate);
+    } else if (type === 'endDate') {
+      setIsEndDatePickerVisible(false);
+      if (selectedDate) setEndDate(selectedDate);
     }
   };
 
@@ -52,12 +128,70 @@ const HabitAddPage = () => {
     <View style={styles.container}>
       <Text style={styles.title}>Add Habit</Text>
       <Text style={styles.label}>Date: {date || 'Today'}</Text>
+
+      {/* Habit Input */}
       <TextInput
         style={styles.input}
         placeholder="Enter your habit"
         value={habit}
         onChangeText={setHabit}
       />
+
+      {/* Time Picker */}
+      <TouchableOpacity style={styles.selectSmileyButton} onPress={() => showDatePicker('time')}>
+        <Text style={styles.selectSmileyButtonText}>Time: {time.toLocaleTimeString()}</Text>
+      </TouchableOpacity>
+      {isTimePickerVisible && (
+        <DateTimePicker
+          value={time}
+          mode="time"
+          display="default"
+          onChange={(event, selectedTime) => handleDateChange(event, selectedTime, 'time')}
+        />
+      )}
+
+      {/* Repeat Picker */}
+      <Text style={styles.label}>Repeat:</Text>
+      <FlatList
+        data={repeatOptions}
+        keyExtractor={(item) => item}
+        horizontal
+        renderItem={({ item }) => (
+          <TouchableOpacity
+            style={[
+              styles.repeatOption,
+              repeat === item && styles.selectedRepeatOption,
+            ]}
+            onPress={() => setRepeat(item)}
+          >
+            <Text
+              style={[
+                styles.repeatOptionText,
+                repeat === item && styles.selectedRepeatOptionText,
+              ]}
+            >
+              {item}
+            </Text>
+          </TouchableOpacity>
+        )}
+      />
+
+      {/* End Date Picker */}
+      <TouchableOpacity style={styles.selectSmileyButton} onPress={() => showDatePicker('endDate')}>
+        <Text style={styles.selectSmileyButtonText}>
+          End Date: {endDate ? endDate.toLocaleDateString() : 'None'}
+        </Text>
+      </TouchableOpacity>
+      {isEndDatePickerVisible && (
+        <DateTimePicker
+          value={endDate || new Date()}
+          mode="date"
+          display="default"
+          onChange={(event, selectedDate) => handleDateChange(event, selectedDate, 'endDate')}
+        />
+      )}
+
+      {/* Smiley Picker */}
       <Text style={styles.label}>Selected Smiley: {smiley}</Text>
       <TouchableOpacity
         style={styles.selectSmileyButton}
@@ -65,10 +199,12 @@ const HabitAddPage = () => {
       >
         <Text style={styles.selectSmileyButtonText}>Choose Smiley</Text>
       </TouchableOpacity>
+
       <TouchableOpacity onPress={addHabit} style={styles.button}>
         <Text style={styles.buttonText}>Add Habit</Text>
       </TouchableOpacity>
 
+      {/* Smiley Modal */}
       <Modal
         animationType="slide"
         transparent={true}
@@ -179,6 +315,23 @@ const styles = StyleSheet.create({
   },
   smileyText: {
     fontSize: 24,
+  },
+  repeatOption: {
+    padding: 10,
+    margin: 5,
+    borderWidth: 1,
+    borderColor: '#567396',
+    borderRadius: 5,
+  },
+  selectedRepeatOption: {
+    backgroundColor: '#567396',
+  },
+  repeatOptionText: {
+    color: '#333',
+    fontSize: 16,
+  },
+  selectedRepeatOptionText: {
+    color: '#fff',
   },
 });
 
