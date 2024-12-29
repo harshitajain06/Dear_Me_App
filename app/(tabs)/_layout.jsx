@@ -4,19 +4,22 @@ import { createStackNavigator } from '@react-navigation/stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import HomeScreen from './HomeScreen';
 import CalendarPage from './CalendarPage';
-import VideosPage from './VideosPage'; // Updated import
-import JournalPage from './JournalPage'; // Import the JournalPage component
+import VideosPage from './VideosPage'; // Existing Videos Page
+import JournalPage from './JournalPage'; // Journal Page
+import ExpertVideosPage from './ExpertVideosPage'; // New Expert Videos Page
+import AboutPage from './AboutPage'; // New About Page
 import RegisterScreen from './index';
 import LoginScreen from './Login';
-import HabitAddPage from './HabitAddPage'; // Import the HabitAddPage
-import GratitudeList from './GratitudeList'; // New GratitudeList Page
-import TodaysGoals from './TodaysGoals'; // New TodaysGoals Page
-import DailyReflection from './DailyReflection'; // New DailyReflection Page
-import FreeJournaling from './FreeJournaling'; // New FreeJournaling Page
-import ABCDEMethod from './ABCDEMethod'; // New ABCDEMethod Page
+import HabitAddPage from './HabitAddPage'; // Habit Add Page
+import GratitudeList from './GratitudeList'; // New Gratitude List Page
+import TodaysGoals from './TodaysGoals'; // New Today's Goals Page
+import DailyReflection from './DailyReflection'; // New Daily Reflection Page
+import FreeJournaling from './FreeJournaling'; // New Free Journaling Page
+import ABCDEMethod from './ABCDEMethod'; // New ABCDE Method Page
+import JournalEntries from './JournalEntries';
 import { Colors } from '../../constants/Colors';
 import { useColorScheme } from '../../hooks/useColorScheme';
-import { Ionicons } from '@expo/vector-icons'; // If using Expo
+import { Ionicons } from '@expo/vector-icons';
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -42,9 +45,13 @@ const BottomTabs = () => {
           } else if (route.name === 'Calendar') {
             iconName = focused ? 'calendar' : 'calendar-outline';
           } else if (route.name === 'Videos') {
-            iconName = focused ? 'videocam' : 'videocam-outline'; // Updated icon
+            iconName = focused ? 'videocam' : 'videocam-outline';
           } else if (route.name === 'Journal') {
-            iconName = focused ? 'book' : 'book-outline'; // Icon for Journal
+            iconName = focused ? 'book' : 'book-outline';
+          } else if (route.name === 'Expert Videos') {
+            iconName = focused ? 'school' : 'school-outline';
+          } else if (route.name === 'About') {
+            iconName = focused ? 'information-circle' : 'information-circle-outline';
           }
 
           return <Ionicons name={iconName} size={size} color={color} />;
@@ -55,13 +62,23 @@ const BottomTabs = () => {
       <Tab.Screen name="Calendar" component={CalendarPage} />
       <Tab.Screen
         name="Videos"
-        component={VideosPage} // Updated component
+        component={VideosPage}
         options={{ title: 'Videos' }}
       />
       <Tab.Screen
         name="Journal"
-        component={JournalPage} // New Journal Tab
+        component={JournalPage}
         options={{ title: 'Journal' }}
+      />
+      <Tab.Screen
+        name="Expert Videos"
+        component={ExpertVideosPage} // New Expert Videos Component
+        options={{ title: 'Expert Videos' }}
+      />
+      <Tab.Screen
+        name="About"
+        component={AboutPage} // New About Component
+        options={{ title: 'About' }}
       />
     </Tab.Navigator>
   );
@@ -94,6 +111,7 @@ export default function StackLayout() {
       <Stack.Screen name="DailyReflection" component={DailyReflection} />
       <Stack.Screen name="FreeJournaling" component={FreeJournaling} />
       <Stack.Screen name="ABCDEMethod" component={ABCDEMethod} />
+      <Stack.Screen name="JournalEntries" component={JournalEntries} />
     </Stack.Navigator>
   );
 }

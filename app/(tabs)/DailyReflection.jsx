@@ -1,4 +1,4 @@
-// src/navigation/DailyReflection.jsx
+// src/screens/DailyReflection.jsx
 import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, FlatList, Modal } from 'react-native';
 import { auth, db } from '../../config/firebase';
@@ -8,9 +8,18 @@ import { Ionicons } from '@expo/vector-icons';
 
 const DailyReflection = ({ navigation }) => {
   const [user, loading, error] = useAuthState(auth);
-  const [reflection, setReflection] = useState('');
+  const [responses, setResponses] = useState({});
   const [reflections, setReflections] = useState([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
+
+  // Reflection questions
+  const questions = [
+    'What was the best part of your day?',
+    'What challenged you today?',
+    'What did you learn today?',
+    'What are you grateful for today?',
+    'What could you have done better?',
+  ];
 
   // Fetch reflections from Firebase
   const fetchReflections = async () => {
@@ -33,19 +42,20 @@ const DailyReflection = ({ navigation }) => {
   }, [user]);
 
   const addReflection = async () => {
-    if (!reflection.trim()) {
-      Alert.alert('Validation Error', 'Please enter your reflection.');
+    // Ensure all questions are answered
+    if (Object.keys(responses).length !== questions.length) {
+      Alert.alert('Validation Error', 'Please answer all the questions.');
       return;
     }
 
     try {
       await addDoc(collection(db, 'reflections'), {
         userId: user.uid,
-        reflection: reflection.trim(),
+        responses: responses,
         createdAt: new Date(),
       });
       Alert.alert('Success', 'Reflection added successfully.');
-      setReflection('');
+      setResponses({}); // Clear responses
       fetchReflections(); // Refresh the list
     } catch (err) {
       console.error('Error adding reflection: ', err);
@@ -64,6 +74,28 @@ const DailyReflection = ({ navigation }) => {
     }
   };
 
+  const handleResponseChange = (question, value) => {
+    setResponses((prev) => ({ ...prev, [question]: value }));
+  };
+
+  const renderReflectionItem = ({ item }) => {
+    return (
+      <View style={styles.reflectionItem}>
+        <Text style={styles.reflectionItemText}>
+          {questions.map((question, index) => (
+            <View key={index} style={styles.questionAnswerContainer}>
+              <Text style={styles.questionText}>{question}</Text>
+              <Text style={styles.answerText}>{item.responses[question] || 'No response'}</Text>
+            </View>
+          ))}
+        </Text>
+        <TouchableOpacity onPress={() => deleteReflection(item.id)} style={styles.deleteButton}>
+          <Ionicons name="trash" size={24} color="#FF5733" />
+        </TouchableOpacity>
+      </View>
+    );
+  };
+
   return (
     <View style={styles.container}>
       {/* Header */}
@@ -74,13 +106,18 @@ const DailyReflection = ({ navigation }) => {
         </TouchableOpacity>
       </View>
 
-      {/* Input Field */}
-      <TextInput
-        style={styles.input}
-        placeholder="Enter your daily reflection"
-        value={reflection}
-        onChangeText={setReflection}
-      />
+      {/* Reflection Questions */}
+      {questions.map((question, index) => (
+        <View key={index} style={styles.questionContainer}>
+          <Text style={styles.questionText}>{question}</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Your response"
+            value={responses[question] || ''}
+            onChangeText={(text) => handleResponseChange(question, text)}
+          />
+        </View>
+      ))}
 
       {/* Add Reflection Button */}
       <TouchableOpacity onPress={addReflection} style={styles.button}>
@@ -100,14 +137,7 @@ const DailyReflection = ({ navigation }) => {
             <FlatList
               data={reflections}
               keyExtractor={(item) => item.id}
-              renderItem={({ item }) => (
-                <View style={styles.modalItem}>
-                  <Text style={styles.modalItemText}>{item.reflection}</Text>
-                  <TouchableOpacity onPress={() => deleteReflection(item.id)}>
-                    <Ionicons name="trash" size={24} color="#FF5733" />
-                  </TouchableOpacity>
-                </View>
-              )}
+              renderItem={renderReflectionItem}
             />
             <TouchableOpacity
               style={styles.closeModalButton}
@@ -145,13 +175,21 @@ const styles = StyleSheet.create({
   icon: {
     marginLeft: 'auto',
   },
+  questionContainer: {
+    marginBottom: 20,
+    width: '100%',
+  },
+  questionText: {
+    fontSize: 16,
+    color: '#567396',
+    marginBottom: 5,
+  },
   input: {
     width: '100%',
     padding: 15,
     borderWidth: 1,
     borderColor: '#567396',
     borderRadius: 10,
-    marginBottom: 20,
     backgroundColor: '#fff',
   },
   button: {
@@ -187,19 +225,29 @@ const styles = StyleSheet.create({
     marginBottom: 15,
     color: '#007BFF',
   },
-  modalItem: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 10,
+  reflectionItem: {
+    marginBottom: 20,
+    width: '100%',
+    padding: 10,
     borderBottomWidth: 1,
     borderColor: '#E1E8F0',
-    width: '100%',
   },
-  modalItemText: {
-    fontSize: 16,
+  questionAnswerContainer: {
+    marginBottom: 10,
+  },
+  questionText: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: '#567396',
+  },
+  answerText: {
+    fontSize: 14,
     color: '#333',
-    flex: 1, // Ensures text takes available space
+    marginTop: 5,
+  },
+  deleteButton: {
+    alignSelf: 'flex-end',
+    marginTop: 10,
   },
   closeModalButton: {
     marginTop: 20,
