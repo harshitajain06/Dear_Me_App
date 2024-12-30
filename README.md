@@ -54,9 +54,8 @@ Here are some screenshots of the app:
 <img src="assets/images/reflections.jpeg" width="150" style="margin-right: 20px; margin-bottom: 20px;"/>
 <img src="assets/images/savedGratitudes.jpeg" width="150" style="margin-right: 20px; margin-bottom: 20px;"/>
 <img src="assets/images/showhabit.jpeg" width="150" style="margin-right: 20px; margin-bottom: 20px;"/>
-
-
 </div>
+
 ## Learn more
 
 To learn more about developing your project with Expo, look at the following resources:
