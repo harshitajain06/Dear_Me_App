@@ -39,21 +39,23 @@ This command will move the starter code to the **app-example** directory and cre
 
 Here are some screenshots of the app:
 <div style="display: flex; flex-wrap: wrap; justify-content: flex-start;">
-  <img src="assets/images/login.jpeg" width="300" style="margin-right: 20px; margin-bottom: 20px;"/>
-  <img src="assets/images/signup.jpeg" width="300" style="margin-right: 20px; margin-bottom: 20px;"/>
-  <img src="assets/images/calender.jpeg" width="300" style="margin-right: 20px; margin-bottom: 20px;"/>
-  <img src="assets/images/addHabit.jpeg" width="300" style="margin-right: 20px; margin-bottom: 20px;"/>
-  <img src="assets/images/journaling.jpeg" width="300" style="margin-right: 20px; margin-bottom: 20px;"/>
-  <img src="assets/images/dailyReflection.jpeg" width="300" style="margin-right: 20px; margin-bottom: 20px;"/>
-  <img src="assets/images/about.jpeg" width="300" style="margin-right: 20px; margin-bottom: 20px;"/>
-  <img src="assets/images/expert.jpeg" width="300" style="margin-right: 20px; margin-bottom: 20px;"/>
-  <img src="assets/images/GoalsPage.jpeg" width="300" style="margin-right: 20px; margin-bottom: 20px;"/>
-  <img src="assets/images/Gratitute.jpeg" width="300" style="margin-right: 20px; margin-bottom: 20px;"/>
-  <img src="assets/images/journalEntries.jpeg" width="300" style="margin-right: 20px; margin-bottom: 20px;"/>
-  <img src="assets/images/meditation.jpeg" width="300" style="margin-right: 20px; margin-bottom: 20px;"/>
-  <img src="assets/images/reflections.jpeg" width="300" style="margin-right: 20px; margin-bottom: 20px;"/>
-  <img src="assets/images/savedGratitudes.jpeg" width="300" style="margin-right: 20px; margin-bottom: 20px;"/>
-  <img src="assets/images/showhabit.jpeg" width="300" style="margin-right: 20px; margin-bottom: 20px;"/>
+  <img src="assets/images/login.jpeg" width="150" style="margin-right: 20px; margin-bottom: 20px;"/>
+<img src="assets/images/signup.jpeg" width="150" style="margin-right: 20px; margin-bottom: 20px;"/>
+<img src="assets/images/calender.jpeg" width="150" style="margin-right: 20px; margin-bottom: 20px;"/>
+<img src="assets/images/addHabit.jpeg" width="150" style="margin-right: 20px; margin-bottom: 20px;"/>
+<img src="assets/images/journaling.jpeg" width="150" style="margin-right: 20px; margin-bottom: 20px;"/>
+<img src="assets/images/dailyReflection.jpeg" width="150" style="margin-right: 20px; margin-bottom: 20px;"/>
+<img src="assets/images/about.jpeg" width="150" style="margin-right: 20px; margin-bottom: 20px;"/>
+<img src="assets/images/expert.jpeg" width="150" style="margin-right: 20px; margin-bottom: 20px;"/>
+<img src="assets/images/GoalsPage.jpeg" width="150" style="margin-right: 20px; margin-bottom: 20px;"/>
+<img src="assets/images/Gratitute.jpeg" width="150" style="margin-right: 20px; margin-bottom: 20px;"/>
+<img src="assets/images/journalEntries.jpeg" width="150" style="margin-right: 20px; margin-bottom: 20px;"/>
+<img src="assets/images/meditation.jpeg" width="150" style="margin-right: 20px; margin-bottom: 20px;"/>
+<img src="assets/images/reflections.jpeg" width="150" style="margin-right: 20px; margin-bottom: 20px;"/>
+<img src="assets/images/savedGratitudes.jpeg" width="150" style="margin-right: 20px; margin-bottom: 20px;"/>
+<img src="assets/images/showhabit.jpeg" width="150" style="margin-right: 20px; margin-bottom: 20px;"/>
+
+
 </div>
 ## Learn more
 
