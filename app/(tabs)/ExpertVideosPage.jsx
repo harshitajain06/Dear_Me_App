@@ -13,7 +13,7 @@ const ExpertVideosPage = () => {
   useEffect(() => {
     const fetchVideos = async () => {
       try {
-        const videosCollection = collection(db, 'MeditationVideos'); // Adjust collection name if needed
+        const videosCollection = collection(db, 'ExpertVideos'); // Adjust collection name if needed
         const videoSnapshot = await getDocs(videosCollection);
         const videoList = videoSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         setVideos(videoList);
@@ -50,7 +50,7 @@ const ExpertVideosPage = () => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.pageTitle}>Guided Meditation Videos</Text>
+      <Text style={styles.pageTitle}>Expert Videos</Text>
       <FlatList
         data={videos}
         keyExtractor={item => item.id}

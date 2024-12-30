@@ -250,6 +250,7 @@ const styles = StyleSheet.create({
     color: '#567396',
     marginBottom: 20,
     fontWeight: 'bold',
+    marginTop: 50,
   },
   label: {
     fontSize: 18,
