@@ -10,7 +10,7 @@ export default function AboutPage() {
           source={require('../../assets/logo.png')} // Replace with your logo
           style={styles.logo}
         /> */}
-        <Text style={styles.heading}>About This App</Text>
+        <Text style={styles.heading}>About Dear Me</Text>
         <Text style={styles.text}>
           Welcome to our app! This app is designed to help you improve your daily habits, manage your
           goals, and reflect on your personal growth journey. With features like habit tracking,

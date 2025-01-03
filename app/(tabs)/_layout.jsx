@@ -58,6 +58,11 @@ const BottomTabs = () => {
         },
       })}
     >
+      <Tab.Screen
+        name="About"
+        component={AboutPage} // New About Component
+        options={{ title: 'About' }}
+      />
       <Tab.Screen name="Home" component={HomeScreen} />
       <Tab.Screen name="Calendar" component={CalendarPage} />
       <Tab.Screen
@@ -75,11 +80,7 @@ const BottomTabs = () => {
         component={ExpertVideosPage} // New Expert Videos Component
         options={{ title: 'Expert Videos' }}
       />
-      <Tab.Screen
-        name="About"
-        component={AboutPage} // New About Component
-        options={{ title: 'About' }}
-      />
+    
     </Tab.Navigator>
   );
 };
