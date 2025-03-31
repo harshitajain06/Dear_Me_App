@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Alert, StyleSheet } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, Alert, StyleSheet, Image } from 'react-native';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../../config/firebase';
 import { useNavigation } from '@react-navigation/native';
 import Toast from 'react-native-toast-message';
 import { useAuthState } from 'react-firebase-hooks/auth';
+
+// Import the logo
+import logo from '../../assets/images/icon.png'; // Ensure the path is correct
 
 const Login = () => {
   const [user, loading, error] = useAuthState(auth);
@@ -68,6 +71,9 @@ const Login = () => {
 
   return (
     <View style={styles.container}>
+      {/* Logo */}
+      <Image source={logo} style={styles.logo} resizeMode="contain" />
+
       <Text style={styles.title}>Login</Text>
 
       <TextInput
@@ -118,15 +124,20 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#f7f7f7',
-    paddingHorizontal: 20,
     backgroundColor: '#DCE9FE',
+    paddingHorizontal: 20,
+  },
+  logo: {
+    width: 300, // Adjust as needed
+    height: 300, // Adjust as needed
+   
   },
   title: {
     fontSize: 36,
     fontWeight: 'bold',
     color: '#567396',
     marginBottom: 30,
+    marginTop: '-120'
   },
   input: {
     width: '100%',

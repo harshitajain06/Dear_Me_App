@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Alert, StyleSheet } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, Alert, StyleSheet, Image } from 'react-native';
 import { createUserWithEmailAndPassword, sendEmailVerification } from 'firebase/auth';
 import { auth } from '../../config/firebase';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { useNavigation } from '@react-navigation/native';
 import Toast from 'react-native-toast-message';
+
+// Import the logo
+import logo from '../../assets/images/icon.png'; // Ensure this path is correct
 
 const RegisterScreen = () => {
   const [user, loading, error] = useAuthState(auth);
@@ -73,6 +76,9 @@ const RegisterScreen = () => {
 
   return (
     <View style={styles.container}>
+      {/* Logo */}
+      <Image source={logo} style={styles.logo} resizeMode="contain" />
+
       <Text style={styles.title}>Sign Up</Text>
 
       <TextInput
@@ -135,15 +141,20 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#f7f7f7',
-    paddingHorizontal: 20,
     backgroundColor: '#DCE9FE',
+    paddingHorizontal: 20,
+  },
+  logo: {
+    width: 300, // Adjust as needed
+    height: 300, // Adjust as needed
+    marginBottom: 20, // Space below the logo
   },
   title: {
     fontSize: 36,
     fontWeight: 'bold',
     color: '#567396',
     marginBottom: 30,
+    marginTop: '-140'
   },
   input: {
     width: '100%',
@@ -180,7 +191,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop:10
+    marginTop: 10,
   },
   loginText: {
     color: '#333',
