@@ -1,5 +1,4 @@
-// src/navigation/StackLayout.jsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -15,53 +14,90 @@ import { useRoute, useNavigation } from '@react-navigation/native';
 import { auth, db } from '../../config/firebase';
 import { collection, addDoc } from 'firebase/firestore';
 import { useAuthState } from 'react-firebase-hooks/auth';
+import * as Notifications from 'expo-notifications';
+
+// Configure notification behavior
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldPlaySound: true,
+    shouldSetBadge: false,
+  }),
+});
 
 const HabitAddPage = () => {
-  const navigation = useNavigation();
-  const route = useRoute();
-  const { date } = route.params || {};
-  const [user, loading, error] = useAuthState(auth);
-  const [habit, setHabit] = useState('');
-  const [smiley, setSmiley] = useState('🙂'); // Default smiley
-  const [isModalVisible, setIsModalVisible] = useState(false);
-  const [time, setTime] = useState(new Date());
-  const [repeat, setRepeat] = useState('None'); // Default repeat value
-  const [endDate, setEndDate] = useState(null);
-  const [isTimePickerVisible, setIsTimePickerVisible] = useState(false);
-  const [isEndDatePickerVisible, setIsEndDatePickerVisible] = useState(false);
+    const navigation = useNavigation();
+    const route = useRoute();
+    const { date } = route.params || {};
+    const [user, loading, error] = useAuthState(auth);
+    const [habit, setHabit] = useState('');
+    const [smiley, setSmiley] = useState('🙂'); // Default smiley
+    const [isModalVisible, setIsModalVisible] = useState(false);
+    const [time, setTime] = useState(new Date());
+    const [repeat, setRepeat] = useState('None'); // Default repeat value
+    const [endDate, setEndDate] = useState(null);
+    const [isTimePickerVisible, setIsTimePickerVisible] = useState(false);
+    const [isEndDatePickerVisible, setIsEndDatePickerVisible] = useState(false);
+  
+    const smileys = ['🙂', '😌', '😅', '😔', '😎', '😂', '😍', '🤔', '😴', '🤩'];
+    const repeatOptions = ['None', 'Daily', 'Weekly', 'Monthly'];
 
-  const smileys = ['🙂', '😌', '😅', '😔', '😎', '😂', '😍', '🤔', '😴', '🤩'];
-  const repeatOptions = ['None', 'Daily', 'Weekly', 'Monthly'];
+    useEffect(() => {
+        (async () => {
+          const { status } = await Notifications.requestPermissionsAsync();
+          if (status !== 'granted') {
+            Alert.alert('Permission Required', 'Please enable notifications in settings.');
+          }
+        })();
+      }, []);
 
-  const addHabit = async () => {
-    if (!habit.trim()) {
-      Alert.alert('Validation Error', 'Please enter a habit.');
-      return;
-    }
-  
-    if (repeat !== 'None' && !endDate) {
-      Alert.alert('Validation Error', 'Please specify an end date for repeated habits.');
-      return;
-    }
-  
-    try {
-      const habitsToAdd = [];
-      const currentDate = new Date(date || new Date().toISOString().split('T')[0]);
-      let nextDate = new Date(currentDate);
-  
-      while (repeat !== 'None' && endDate && nextDate <= endDate) {
-        habitsToAdd.push({
-          userId: user.uid,
-          habit: habit.trim(),
-          date: nextDate.toISOString().split('T')[0],
-          smiley,
-          time: time.toISOString(),
-          repeat,
-          endDate: endDate.toISOString(),
-          createdAt: new Date(),
+      const scheduleNotification = async (habitName, notificationTime, repeat) => {
+        const trigger = new Date(notificationTime);
+        
+        await Notifications.scheduleNotificationAsync({
+          content: {
+            title: 'Habit Reminder',
+            body: `Time to complete your habit: ${habitName} ✅`,
+            sound: 'default',
+          },
+          trigger: {
+            hour: trigger.getHours(),
+            minute: trigger.getMinutes(),
+            repeats: repeat !== 'None',
+          },
         });
-  
-        // Calculate next repeat date
+      };
+
+      const addHabit = async () => {
+        if (!habit.trim()) {
+          Alert.alert('Validation Error', 'Please enter a habit.');
+          return;
+        }
+    
+        if (repeat !== 'None' && !endDate) {
+          Alert.alert('Validation Error', 'Please specify an end date for repeated habits.');
+          return;
+        }
+    
+        try {
+          const habitsToAdd = [];
+          const currentDate = new Date(date || new Date().toISOString().split('T')[0]);
+          let nextDate = new Date(currentDate);
+    
+          while (repeat !== 'None' && endDate && nextDate <= endDate) {
+            habitsToAdd.push({
+              userId: user.uid,
+              habit: habit.trim(),
+              date: nextDate.toISOString().split('T')[0],
+              smiley,
+              time: time.toISOString(),
+              repeat,
+              endDate: endDate.toISOString(),
+              createdAt: new Date(),
+            });
+
+            await scheduleNotification(habit, time, repeat);
+
         switch (repeat) {
           case 'Daily':
             nextDate.setDate(nextDate.getDate() + 1);
@@ -76,7 +112,7 @@ const HabitAddPage = () => {
             break;
         }
       }
-  
+
       if (repeat === 'None') {
         habitsToAdd.push({
           userId: user.uid,
@@ -88,15 +124,11 @@ const HabitAddPage = () => {
           endDate: null,
           createdAt: new Date(),
         });
+
+        await scheduleNotification(habit, time, 'None');
       }
-  
-      // Save all habits in the database
-      const batchPromises = habitsToAdd.map((habitData) =>
-        addDoc(collection(db, 'habits'), habitData)
-      );
-  
-      await Promise.all(batchPromises);
-  
+      await Promise.all(habitsToAdd.map((habitData) => addDoc(collection(db, 'habits'), habitData)));
+
       Alert.alert('Success', 'Habit(s) added successfully.');
       navigation.goBack();
     } catch (err) {
@@ -104,7 +136,6 @@ const HabitAddPage = () => {
       Alert.alert('Error', 'Failed to add habit(s).');
     }
   };
-  
 
   const showDatePicker = (type) => {
     if (type === 'time') {
@@ -123,6 +154,7 @@ const HabitAddPage = () => {
       if (selectedDate) setEndDate(selectedDate);
     }
   };
+
 
   return (
     <View style={styles.container}>
@@ -177,7 +209,7 @@ const HabitAddPage = () => {
       />
 
       {/* End Date Picker */}
-      <TouchableOpacity style={styles.selectSmileyButton} onPress={() => showDatePicker('endDate')}>
+      <TouchableOpacity style={styles.endDateButton} onPress={() => showDatePicker('endDate')}>
         <Text style={styles.selectSmileyButtonText}>
           End Date: {endDate ? endDate.toLocaleDateString() : 'None'}
         </Text>
@@ -266,6 +298,13 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     backgroundColor: '#fff',
   },
+  endDateButton: {
+    backgroundColor: '#007BFF',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 5,
+    marginBottom: 20,
+  },
   selectSmileyButton: {
     backgroundColor: '#007BFF',
     paddingVertical: 10,
@@ -285,6 +324,7 @@ const styles = StyleSheet.create({
     borderRadius: 25,
     alignItems: 'center',
     width: '100%',
+    marginBottom: '100'
   },
   buttonText: {
     color: '#fff',
@@ -323,9 +363,11 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#567396',
     borderRadius: 5,
+    height: 60,
   },
   selectedRepeatOption: {
     backgroundColor: '#567396',
+    height: 60
   },
   repeatOptionText: {
     color: '#333',
