@@ -13,6 +13,7 @@ import { useNavigation } from '@react-navigation/native';
 import { db, auth } from '../../config/firebase';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { collection, query, where, getDocs } from 'firebase/firestore';
+import withGradient from '../../components/withGradient';
 
 const CalendarPage = () => {
   const navigation = useNavigation();
@@ -116,7 +117,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
-    backgroundColor: '#DCE9FE',
     alignItems: 'center',
     paddingTop: 50,
   },
@@ -155,4 +155,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default CalendarPage;
+export default withGradient(CalendarPage);

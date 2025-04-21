@@ -18,6 +18,7 @@ import { useAuthState } from "react-firebase-hooks/auth";
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import { signOut } from "firebase/auth";
 import { Ionicons } from "@expo/vector-icons";
+import withGradient from '../../components/withGradient';
 
 const HomeScreen = () => {
   const navigation = useNavigation();
@@ -231,7 +232,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
-    backgroundColor: '#DCE9FE',
     justifyContent: 'flex-start',
     alignItems: 'center',
     paddingTop: 50,
@@ -290,4 +290,4 @@ const styles = StyleSheet.create({
   errorText: { fontSize: 18, color: "#ff0000", textAlign: "center" },
 });
 
-export default HomeScreen;
+export default withGradient(HomeScreen);

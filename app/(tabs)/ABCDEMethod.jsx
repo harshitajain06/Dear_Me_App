@@ -5,6 +5,7 @@ import { auth, db } from '../../config/firebase';
 import { collection, addDoc, getDocs, deleteDoc, doc } from 'firebase/firestore';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { Ionicons } from '@expo/vector-icons';
+import withGradient from '../../components/withGradient';
 
 const ABCDEMethod = ({ navigation }) => {
   const [user, loading, error] = useAuthState(auth);
@@ -162,7 +163,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
-    backgroundColor: '#DCE9FE',
     alignItems: 'center',
   },
   header: {
@@ -253,4 +253,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default ABCDEMethod;
+export default withGradient(ABCDEMethod);

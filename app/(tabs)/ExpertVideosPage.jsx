@@ -2,7 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, FlatList, Image, TouchableOpacity, StyleSheet, ActivityIndicator, Modal, Pressable } from 'react-native';
 import { collection, getDocs } from 'firebase/firestore';
 import { db } from '../../config/firebase'; // Adjust the import path
-import WebView from 'react-native-webview'; // Install if not already installed
+import WebView from 'react-native-webview'; // Install if not already installed\
+import withGradient from '../../components/withGradient';
 
 const ExpertVideosPage = () => {
   const [videos, setVideos] = useState([]);
@@ -85,7 +86,6 @@ const ExpertVideosPage = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#DCE9FE', // Light green background
   },
   pageTitle: {
     fontSize: 24,
@@ -146,4 +146,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default ExpertVideosPage;
+export default withGradient(ExpertVideosPage);

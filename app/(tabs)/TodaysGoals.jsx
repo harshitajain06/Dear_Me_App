@@ -4,6 +4,7 @@ import { Ionicons } from '@expo/vector-icons'; // Import Ionicons
 import { auth, db } from '../../config/firebase';
 import { collection, addDoc, getDocs, deleteDoc, doc } from 'firebase/firestore';
 import { useAuthState } from 'react-firebase-hooks/auth';
+import withGradient from '../../components/withGradient';
 
 const TodaysGoals = () => {
   const [user, loading, error] = useAuthState(auth);
@@ -125,7 +126,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
-    backgroundColor: '#DCE9FE',
     alignItems: 'center',
   },
   header: {
@@ -221,4 +221,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default TodaysGoals;
+export default withGradient(TodaysGoals);

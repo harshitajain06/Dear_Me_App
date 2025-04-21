@@ -15,6 +15,7 @@ import { auth, db } from '../../config/firebase';
 import { collection, addDoc } from 'firebase/firestore';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import * as Notifications from 'expo-notifications';
+import withGradient from '../../components/withGradient';
 
 // Configure notification behavior
 Notifications.setNotificationHandler({
@@ -273,7 +274,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
-    backgroundColor: '#DCE9FE',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -378,4 +378,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default HabitAddPage;
+export default withGradient(HabitAddPage);

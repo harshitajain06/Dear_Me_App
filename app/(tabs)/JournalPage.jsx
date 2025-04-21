@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
 import { Colors } from '../../constants/Colors';
+import withGradient from '../../components/withGradient';
 
 const JournalPage = ({ navigation }) => {
   return (
@@ -37,7 +38,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 16,
-    backgroundColor: '#DCE9FE', // Light background
     alignItems: 'center',
   },
   title: {
@@ -73,4 +73,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default JournalPage;
+export default withGradient(JournalPage);

@@ -5,6 +5,7 @@ import { auth } from '../../config/firebase';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { useNavigation } from '@react-navigation/native';
 import Toast from 'react-native-toast-message';
+import withGradient from '../../components/withGradient';
 
 // Import the logo
 import logo from '../../assets/images/icon.png'; // Ensure this path is correct
@@ -141,7 +142,6 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#DCE9FE',
     paddingHorizontal: 20,
   },
   logo: {
@@ -204,4 +204,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default RegisterScreen;
+export default withGradient(RegisterScreen);

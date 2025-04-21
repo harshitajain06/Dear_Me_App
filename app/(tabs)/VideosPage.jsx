@@ -3,6 +3,7 @@ import { View, Text, FlatList, Image, TouchableOpacity, StyleSheet, ActivityIndi
 import { collection, getDocs } from 'firebase/firestore';
 import { db } from '../../config/firebase'; // Adjust the import path
 import WebView from 'react-native-webview'; // Install if not already installed
+import withGradient from '../../components/withGradient';
 
 const VideosPage = () => {
   const [videos, setVideos] = useState([]);
@@ -85,7 +86,6 @@ const VideosPage = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#DCE9FE', // Light green background
   },
   pageTitle: {
     fontSize: 24,
@@ -146,4 +146,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default VideosPage;
+export default withGradient(VideosPage);
